@@ -1,9 +1,6 @@
 package com.example.JobApp.model;
 
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
@@ -12,17 +9,19 @@ import lombok.Data;
 public class User {
 
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String username;
+    private String password;
 
-    public int getId() {
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
-
-    private String username;
 
     public String getUsername() {
         return username;
@@ -40,5 +39,5 @@ public class User {
         this.password = password;
     }
 
-    private String password;
+
 }
