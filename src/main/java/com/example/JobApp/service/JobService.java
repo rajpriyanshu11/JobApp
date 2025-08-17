@@ -1,11 +1,19 @@
 package com.example.JobApp.service;
 
 import com.example.JobApp.model.Job;
+import com.example.JobApp.model.JobRequestDTO;
+import com.example.JobApp.model.JobResponseDTO;
 import com.example.JobApp.repository.repo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.batch.BatchProperties;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import com.example.JobApp.model.User;
+import com.example.JobApp.repository.UserRepo;
 
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,22 +24,63 @@ public class JobService {
     @Autowired
     private repo repo;
 
+    @Autowired
+    private UserRepo userRepo;
 
-    public Job addJob(Job job){
-        return repo.save(job);
+
+    public JobResponseDTO addJob(JobRequestDTO jobRequestDTO, String username){
+
+        Job job=new Job();
+        job.setCompany(jobRequestDTO.getCompany());
+        job.setJobTitle(jobRequestDTO.getJobTitle());
+        job.setJobType(jobRequestDTO.getJobType());
+        job.setJobDesc(jobRequestDTO.getJobDesc());
+        job.setLocation(jobRequestDTO.getLocation());
+        job.setTechStack(jobRequestDTO.getTechStack());
+        job.setMinSalary(jobRequestDTO.getMinSalary());
+        job.setMaxSalary(jobRequestDTO.getMaxSalary());
+        job.setMinExp(jobRequestDTO.getMinExp());
+        job.setMaxExp(jobRequestDTO.getMaxExp());
+        job.setWorkMode(jobRequestDTO.getWorkMode());
+
+
+        User owner = userRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+        job.setUser(owner);
+
+        Job saved = repo.save(job);
+        return new JobResponseDTO(saved);
     }
 
-    public List<Job> getAllJobs(){
-        return repo.findAll();
-    }
-
-    public boolean getJobById(Long id) {
-        if(repo.existsById(id)){
-            repo.findById(id);
-            return true;
+    public List<Job> getAllJobs(String username, Collection<? extends GrantedAuthority> authorities) {
+        if (authorities.contains(new SimpleGrantedAuthority("ROLE_ADMIN")) ||
+                authorities.contains(new SimpleGrantedAuthority("ROLE_HR"))) {
+            return repo.findAll(); // HR/Admin see everything
+        } else {
+            return repo.findByUserUsername(username);
         }
-        return false;
     }
+
+
+    public Object getJobById(Long id, Authentication auth) {
+        Job job = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+        User currentUser = userRepo.findByUsername(auth.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Authorization logic
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            return new JobResponseDTO.JobAdminDTO(job);
+        } else if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_HR"))) {
+            return new JobResponseDTO.JobHRDTO(job);
+        } else {
+            if (!job.getUser().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("Unauthorized: cannot access another user’s job");
+            }
+            return new JobResponseDTO.JobPublicDTO(job);
+        }
+    }
+
 
     public Job updateJob(Long id, Job jobDetails) {
         Optional<Job> existingJob = repo.findById(id);

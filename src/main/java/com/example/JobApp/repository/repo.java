@@ -11,6 +11,12 @@ public interface repo extends JpaRepository<Job, Long> { //Long is the type of p
 
     List<Job> findByJobDescContainingIgnoreCase(String jobDesc);
 
+    List<Job> findByUserUsername(String username);
+
+
+    List<Job> findByUserId(Long userId);
+
+
 //    static void updateJob(Job job) {
 //    }
 //

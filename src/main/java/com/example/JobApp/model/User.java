@@ -3,9 +3,12 @@ package com.example.JobApp.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @Entity
-@Table(name="Users")
+@Table(name="users")
 public class User {
 
     @Id
@@ -14,9 +17,21 @@ public class User {
     private String username;
     private String password;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "users_id"))
+    private List<String> roles = new ArrayList<>();
+
 
     public Long getId() {
         return id;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 
     public void setId(Long id) {

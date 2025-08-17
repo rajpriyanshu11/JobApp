@@ -1,58 +1,35 @@
 package com.example.JobApp.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.validation.constraints.NotBlank;
+
+
 import java.util.List;
 
-@Entity
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name="job")
-public class Job {
+@AllArgsConstructor
+public class JobRequestDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Primary key
-
+    @NotBlank
     private String company;
+    @NotBlank
     private String jobTitle;
+
     private String jobType;
     private String jobDesc;
     private String location;
 
-    @ElementCollection
-    @CollectionTable(name = "job_tech_stack", joinColumns = @JoinColumn(name = "job_id"))
     private List<String> techStack;
 
-
-    private Double maxSalary;
     private Double minSalary;
-    private Integer maxExp;
+    private Double maxSalary;
     private Integer minExp;
+    private Integer maxExp;
     private String workMode;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public String getCompany() {
         return company;
@@ -68,14 +45,6 @@ public class Job {
 
     public void setJobTitle(String jobTitle) {
         this.jobTitle = jobTitle;
-    }
-
-    public String getWorkMode() {
-        return workMode;
-    }
-
-    public void setWorkMode(String workMode) {
-        this.workMode = workMode;
     }
 
     public String getJobType() {
@@ -110,6 +79,14 @@ public class Job {
         this.techStack = techStack;
     }
 
+    public Double getMinSalary() {
+        return minSalary;
+    }
+
+    public void setMinSalary(Double minSalary) {
+        this.minSalary = minSalary;
+    }
+
     public Double getMaxSalary() {
         return maxSalary;
     }
@@ -118,12 +95,12 @@ public class Job {
         this.maxSalary = maxSalary;
     }
 
-    public Double getMinSalary() {
-        return minSalary;
+    public Integer getMinExp() {
+        return minExp;
     }
 
-    public void setMinSalary(Double minSalary) {
-        this.minSalary = minSalary;
+    public void setMinExp(Integer minExp) {
+        this.minExp = minExp;
     }
 
     public Integer getMaxExp() {
@@ -134,12 +111,13 @@ public class Job {
         this.maxExp = maxExp;
     }
 
-    public Integer getMinExp() {
-        return minExp;
+    public String getWorkMode() {
+        return workMode;
     }
 
-    public void setMinExp(Integer minExp) {
-        this.minExp = minExp;
+    public void setWorkMode(String workMode) {
+        this.workMode = workMode;
     }
+
+
 }
-
