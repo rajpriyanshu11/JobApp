@@ -7,7 +7,7 @@ import java.util.*;
 @Data
 public class JobResponseDTO {
 
-
+    private Long id;
     private String company;
     private String jobTitle;
     private String jobType;
@@ -21,7 +21,7 @@ public class JobResponseDTO {
     private String workMode;
 
     public JobResponseDTO(Job job) {
-
+        this.id = job.getId();
         this.company = job.getCompany();
         this.jobTitle = job.getJobTitle();
         this.jobType = job.getJobType();

@@ -10,6 +10,7 @@ import com.example.JobApp.service.JobService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,20 +29,37 @@ public class JobController {
     private UserRepo userRepo;
 
     @GetMapping("job")
-    public ResponseEntity<ApiResponse<List<?>>> getAllJobs(Authentication auth) {
-        List<Job> jobs = jobService.getAllJobs(auth.getName(), auth.getAuthorities());
+    public ResponseEntity<ApiResponse<Page<?>>> getJobs(
+            @RequestParam(required = false) String company,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String jobType,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication auth
+    ) {
+        Page<Job> jobs = jobService.getFilteredJobs(
+                company,
+                location,
+                jobType,
+                keyword,
+                page, size,
+                auth.getName(),
+                auth.getAuthorities()
+        );
 
-        List<?> jobDTOs;
+        Page<?> jobDTOs;
         if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
-            jobDTOs = jobs.stream().map(JobResponseDTO.JobAdminDTO::new).toList();
+            jobDTOs = jobs.map(JobResponseDTO.JobAdminDTO::new);
         } else if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_HR"))) {
-            jobDTOs = jobs.stream().map(JobResponseDTO.JobHRDTO::new).toList();
+            jobDTOs = jobs.map(JobResponseDTO.JobHRDTO::new);
         } else {
-            jobDTOs = jobs.stream().map(JobResponseDTO.JobPublicDTO::new).toList();
+            jobDTOs = jobs.map(JobResponseDTO.JobPublicDTO::new);
         }
 
         return ResponseEntity.ok(new ApiResponse<>(200, "Jobs fetched successfully", true, jobDTOs));
     }
+
 
 
     @GetMapping("/csrf-token")
@@ -72,35 +90,6 @@ public class JobController {
         }
 
 
-
-
-    @GetMapping("/job/keyword/{keyword}")
-    public ResponseEntity<ApiResponse> searchByKeyword(@PathVariable String keyword) {
-        List<Job> jobs = jobService.searchByKeyword(keyword);
-        return ResponseEntity.ok(new ApiResponse<>(200, "Jobs fetched successfully", true, jobs));
-    }
-
-    @DeleteMapping("/job/{id}")
-    public ResponseEntity<ApiResponse> deleteJob(@PathVariable Long id) {
-        boolean deleted = jobService.deleteJob(id);
-
-        if (deleted) {
-            return ResponseEntity.ok(new ApiResponse(
-                    200,
-                    "Job deleted successfully",
-                    true,
-                    null
-            ));
-        } else {
-            return ResponseEntity.status(404).body(new ApiResponse(
-                    404,
-                    "Job not found",
-                    false,
-                    null
-            ));
-        }
-    }
-
     @PostMapping("/job")
     public ResponseEntity<ApiResponse<JobResponseDTO>> addJob(
             @Valid @RequestBody JobRequestDTO jobRequest,
@@ -110,6 +99,7 @@ public class JobController {
         return ResponseEntity.status(201)
                 .body(new ApiResponse<>(201, "Job added successfully", true, createdJob));
     }
+
 
     @PutMapping("/job/{id}")
     public ResponseEntity<ApiResponse<Job>> updateJob(@PathVariable Long id, @RequestBody Job job) {
@@ -135,4 +125,54 @@ public class JobController {
             );
         }
     }
+
+    @PatchMapping("/job/{id}")
+    public ResponseEntity<ApiResponse<?>> updateJob(
+            @PathVariable Long id,
+            @RequestBody JobRequestDTO jobRequest,
+            Authentication auth
+    ) {
+        try {
+            Object updatedJob = jobService.updateJob(id, jobRequest, auth);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    200,
+                    "Job updated successfully",
+                    true,
+                    updatedJob
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(new ApiResponse<>(
+                    403,
+                    e.getMessage(),
+                    false,
+                    null
+            ));
+        }
+    }
+
+
+    @DeleteMapping("/job/{id}")
+    public ResponseEntity<ApiResponse<?>> deleteJob(
+            @PathVariable Long id,
+            Authentication auth
+    ) {
+        try {
+            jobService.deleteJob(id, auth);
+            return ResponseEntity.ok(new ApiResponse<>(
+                    200,
+                    "Job deleted successfully",
+                    true,
+                    null
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(new ApiResponse<>(
+                    403,
+                    e.getMessage(),
+                    false,
+                    null
+            ));
+        }
+    }
+
+
 }
