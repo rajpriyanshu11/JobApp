@@ -1,0 +1,19 @@
+{
+	"info": {
+		"_postman_id": "0c5b96df-c7bb-4315-aa4c-f63f53f785ad",
+		"name": "Job Tracker API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45242141",
+		"_collection_link": "https://priyanshuraj-197734.postman.co/workspace/Priyanshu-Raj's-Workspace~49036254-8fa9-445d-81aa-2b8f0ead71aa/collection/45242141-0c5b96df-c7bb-4315-aa4c-f63f53f785ad?action=share&source=collection_link&creator=45242141"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

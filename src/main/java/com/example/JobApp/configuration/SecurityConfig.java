@@ -42,7 +42,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // disable CSRF for Postman
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/job/register","/job/login")
+                        .requestMatchers("/job/register", "/job/login", "/swagger-ui/**", "/v3/api-docs/**")
                         .permitAll()
                         .anyRequest().authenticated()
 
