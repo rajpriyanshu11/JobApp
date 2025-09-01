@@ -71,7 +71,9 @@ public class JobService {
             if (!job.getUser().getId().equals(currentUser.getId())) {
                 throw new RuntimeException("Unauthorized: cannot access another user’s job");
             }
-            return new JobResponseDTO.JobPublicDTO(job);
+            JobResponseDTO.JobPublicDTO dto = new JobResponseDTO.JobPublicDTO(job);
+            System.out.println("Returning DTO: " + dto);
+            return dto;
         }
     }
 
